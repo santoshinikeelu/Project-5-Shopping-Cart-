@@ -457,7 +457,6 @@ Refer below sample
   createdAt: "2021-09-17T04:25:07.803Z",
   updatedAt: "2021-09-17T04:25:07.803Z",
 }
-```
 
 ### orders
 ```yaml
