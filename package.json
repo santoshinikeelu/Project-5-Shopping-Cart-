@@ -1,0 +1,25 @@
+{
+  "name": "project-shoppingcart",
+  "version": "1.0.0",
+  "description": "Dummy project of amazon or flipcart",
+  "main": "index.js",
+  "scripts": {
+    "test": "server/error-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunandasharma61/project-shoppingCart.git"
+  },
+  "author": "Sunanda Sharma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sunandasharma61/project-shoppingCart/issues"
+  },
+  "homepage": "https://github.com/sunandasharma61/project-shoppingCart#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.8.0",
+    "nodemon": "^2.0.20"
+  }
+}
