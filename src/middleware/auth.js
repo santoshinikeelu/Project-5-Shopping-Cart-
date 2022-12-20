@@ -1,29 +1,30 @@
 const jwt = require("jsonwebtoken");
-const userModel = require("../models/userModel");
-const { isValidObjectId} = require('../validator/validator')
 
-//------------------------Authentication------------------------------
-const authentication = function (req, res, Next) {
-  try {
-    const token = req.headers["bearer Header"];
-    if (!token) {
-      return res.status(400).send({ status: false, message: "Token must be present." });
+const authentication = async function (req, res, next) {
+    try {
+
+        let bearToken = req.headers["authorization"];
+        // if (!bearToken) bearToken = req.headers["Authorization"]
+        if (!bearToken) {
+            return res.status(400).send({ status: false, message: "Token not present, login again " })
+        };
+
+        let token = bearToken.split(" ")[1];
+
+        let decodedToken = jwt.verify(token, "group3Project5",function(err,decodedToken){
+        if(err){
+          return res.status(400).send({status:false,message:"Inavalid token"})
+        }else{
+          req.userId = decodedToken.userId;
+            next();
+         }
+        });
+
+    } catch (error) {
+        res.status(500).send({ status: false, message: error.message })
     }
-
-    jwt.verify(token, 'group3Project5', function (error, decoded) { //callback function
-
-      if (error) {
-        return res.status(401).send({ status: false, message: error.message });
-      }
-      else {
-        req.decodedToken = decoded
-        Next()
-      }
-    })
-  } catch (error) {
-    return res.status(500).send({ status: false, message: error.message });
-  }
-
 }
 
-module.exports = {authentication, authorization};
+
+
+module.exports = { authentication }

@@ -2,7 +2,7 @@ const productModel = require('../models/productModel')
 const aws = require('../aws/awsUpload')
 const validation = require('../validator/validator')
 
-const { isValidPrice, isValidFile, isValidStyle, isValidObjectId} = validation
+const { isValidPrice, isValidFile, isValidStyle, isValidObjectId } = validation
 
 
 //======================================> CREATE PRODUCT <=====================================//
@@ -16,7 +16,7 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: "false", message: "Please enter the data in request body" });
         }
 
-        let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments,productImage } = data;
+        let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage } = data;
 
         if (!title) {
             return res.status(400).send({ status: false, message: "Title is mandatory " });
@@ -88,13 +88,13 @@ const createProduct = async (req, res) => {
 
 const getProductById = async function (req, res) {
     try {
-      let productId = req.params.productId;
-  
-      if (!isValidObjectId(productId)) {
-        return res.status(400).send({ status: false, message: "ProductId not valid" });
-      }
-  
-      const productCheck = await productModel.findById({ _id: product })
+        let productId = req.params.productId;
+
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "ProductId not valid" });
+        }
+
+        const productCheck = await productModel.findById({ _id: product })
         if (!productCheck) {
             return res.status(404).send({ status: false, message: "This product is not found" })
         }
@@ -108,8 +108,33 @@ const getProductById = async function (req, res) {
 
 
     } catch (err) {
-      return res.status(500).send({ satus: false, err: err.message });
+        return res.status(500).send({ satus: false, err: err.message });
     }
-  };
+};
 
-module.exports = { createProduct ,getProductById}
+const deleteProductById = async function (req, res) {
+    try {
+
+        let productId = req.params.productId;
+
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "Invalid product id" })
+        }
+
+        let checkProductId = await productModel.findById({ _id: productId })
+        if (!checkProductId) {
+            return res.status(404).send({ status: false, message: "Product Id dosen't exists." });
+        }
+
+        if (checkProductId.isDeleted === true) {
+            return res.status(400).send({ status: false, message: "Product already deleted." });
+        }
+
+        let deleteProduct = await productModel.findByIdAndUpdate(productId, { $set: { isDeleted: true, deletedAt: Date.now() }}, { new: true });
+         res.status(200).send({ status: true, message: "Product Successfully Deleted.", data: deleteProduct })
+    } catch (error) {
+        res.status(500).send({ status: false, error: error.message });
+    }
+}
+
+module.exports = { createProduct, getProductById, deleteProductById }
