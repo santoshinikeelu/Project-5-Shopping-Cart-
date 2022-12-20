@@ -1,31 +1,90 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
-//------------------>>>-name_Validation-<<<-------------------<<
-exports.isValidname = function (name) {
-    return (typeof name === "string" && name.trim().length > 0 && name.match(/^[\D]+$/))
-}
+//validations---------------------->>>
 
-//------------------>>>-phone_Validation-<<<-------------------<<
-exports.isvalidMobile = function (mobile) {
-    return /^([+]\d{2})?\d{10}$/.test(mobile)
-}
+//Value Validation
+const isEmpty = function (value) {
+  if (typeof value === "undefined" || value === null) return false;
+  if (typeof value === "string" && value.trim().length === 0) return false;
+  return true;
+};
 
-//------------------>>>-email_Validation-<<<--------------------<<
-exports.isValidEmail = function (email) {
-    return /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email)
-}
-//------------------>>>street Validation-<<<---------------------<<
-exports.isValidStreet = function (street) {
-    return /^(\d{1,}) [a-zA-Z0-9\s]+(\,)? [a-zA-Z]+(\,)? [A-Z]{2} [0-9]{5,6}$/.test(street)
-}
-//------------------>>>-pincode_Validation-<<<---------------------<<
-exports.isValidPincode = function (pin) {
-    return /^[\d]{6}$/.test(pin)
-}
+// Vlidation for objectId
+const isValidObjectId = (objectId) => {
+  return mongoose.Types.ObjectId.isValid(objectId);
+};
 
-//------------------>>>-city_Validation-<<<-------------------------<<
-exports.isValidCity = function (city) {
-    return /^[A-Za-z]+$/.test(city)
-}
+//Name Validation
+const isValidName = function (name) {
+  const nameRegex = /^[a-zA-Z ]+$/;
+  return nameRegex.test(name);
+};
 
-module.exports = { isValidname,isValidEmail,isValidMobile,isValidStreet,isValidPincode,isValidCity  }
+// Email Validation
+const isValidEmail = function (email) {
+  const emailRegex =
+    /^[a-z0-9][a-z0-9-_\.]+@([a-z]|[a-z0-9]?[a-z0-9-]+[a-z0-9])\.[a-z0-9]{2,10}(?:\.[a-z]{2,10})?$/;
+  return emailRegex.test(email);
+};
+
+//Phone Validation
+const isValidPhone = function (phone) {
+  const phoneRegex = /^[6-9]\d{9}$/;
+  return phoneRegex.test(phone);
+};
+
+// pincode Validation
+const isValidpincode = function (pincode) {
+  const pincodeRegex = /^[1-9][0-9]{5}$/;
+  return pincodeRegex.test(pincode);
+};
+
+//validation for Input Body
+const isValidInputBody = function (object) {
+  return Object.keys(object).length > 0;
+};
+
+const isValidStreet = function (street) {
+  let streets = /^[#.0-9a-zA-Z\s,-]+$/;
+  return streets.test(street);
+};
+
+const isValidFile = (img) => {
+  const regex = /(\/*\.(?:png|gif|webp|jpeg|jpg))/.test(img)
+  return regex
+}
+//Price Validation
+const isValidPrice = function (price) {
+  return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price);
+};
+//Valid Sizes
+const validSize = function (size) {
+  return ["S", "XS", "M", "X", "L", "XXL", "XL"].includes(size);
+};
+
+//Style Validation
+const isValidStyle = function (value) {
+  return /^[a-zA-Z _.-]+$/.test(value);
+};
+
+//Price validation
+const validPrice = function (price) {
+  return /^\d{0,8}(\.\d{1,4})?$/.test(price);
+};
+
+module.exports = {
+  isEmpty,
+  validSize,
+  isValidName,
+  isValidEmail,
+  isValidPhone,
+  isValidInputBody,
+  isValidpincode,
+  isValidObjectId,
+  isValidStreet,
+  isValidFile,
+  isValidPrice,
+  isValidStyle,
+  validPrice,
+};
+

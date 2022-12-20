@@ -1,137 +1,127 @@
 const userModel = require('../models/userModel')
 const bcrypt = require("bcrypt")
-const AWS= require("aws-sdk")
-const { isValidname,isValidEmail,isValidMobile,isValidStreet,isValidPincode,isValidCity  } = require("../validator/validator")
+const {uploadFile} = require("../aws/awsConfig");
+const { isEmpty,isValidName,isValidEmail,isValidPhone,isValidStreet,isValidPincode,isValidCity  } = require("../validator/validator");
+const jwt = require("jsonwebtoken");
 
-//---------------------s3 link---------------------------//
-AWS.config.update({
-    accessKeyId : "AKIAY3L35MCRZNIRGT6N",
-    secretAccessKey : "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",
-    region: "ap-south-1"
-  })
+const createUser = async function (req, res) {
+    try {
+      let data = req.body;
+      let files = req.files;
+      //console.log(files)
   
-  let uploadImage = async ( image) =>{
-    return new Promise(function(resolve, reject) {
-      // this function will upload file to aws and return the link
-      let s3= new AWS.S3({apiVersion: '2006-03-01'}); // we will be using the s3 service of aws
-   
-      var uploadParams= {
-          ACL: "public-read",
-          Bucket: "classroom-training-bucket",  //HERE
-          Key: "abc/" + image.originalname, //HERE 
-          Body: image.buffer
+      if (Object.keys(data).length == 0) {
+        return res.status(400).send({ status: "false", message: "All fields are mandatory" });
       }
-      s3.upload( uploadParams, function (err, data ){
-          if(err) {
-              return reject({"error": err})
-          }
-          console.log(data)
-          console.log("image uploaded succesfully")
-          return resolve(data.Location)
-      })
-    })
-  }
   
-  const profileImage = async function(req, res){
-    try{
-        let images= req.images
-        if(images && images.length>0){
-            let uploadedImageURL= await uploadImage( images[0] )
-            res.status(201).send({msg: "image uploaded succesfully", data: uploadedImageURL})
-        }
-        else{
-            res.status(400).send({ msg: "No image found" })
-        }
-        
-    }
-    catch(err){
-        res.status(500).send({msg: err})
-    }
-  }
-    
-
-const createUser = async function(req,res){
-    try{
-        const data = req.body
-        const images = req.images
-        const { fname,lname,email,phone, password,address} = data
-        if(Object.keys(data).length == 0){
-            return res.status(400).send({status:false,messsage:"please provide data"})
-        }
-        //--------------------------fname check---------------------//
-        if(!fname) return res.status(400).send({status:false,message:"fname is required "})
-       if(!isValidname(fname)) return res.status(400).send({status:false,message:"please enter valid name"})
-        //--------------------------lname check---------------------//
-        if(!lname) return res.status(400).send({status:false,message:"lname is required "})
-        if(!isValidname(lname)) return res.status(400).send({status:false,message:"please enter valid name"})
-
-        //--------------------------email check---------------------//
-        if(!email) return res.status(400).send({status:false,message:"email is required "})
-        if(!isValidEmail(email)) return res.status(400).send({status:false,message:"please enter valid email"})
-        const emailId = await userModel.find({email:email})
-        if(emailId) return res.status(400).send({status:false,message:"emailId already exist"})
-
-
-
-
-        //--------------------------phone number check---------------------//
-        if(!phone) return res.status(400).send({status:false,message:"phone is required "})
-        if(!isValidMobile(phone)) return res.status(400).send({status:false,message:"please enter valid mobile no."})
-        const phoneNumber=await userModel.find({phone:phone})
-        if(phoneNumber) return res.status(400).send({status:400,message:"mobile no. is already exists"})
-
-
-
-
-        //--------------------------password check---------------------//
-        if(!password) return res.status(400).send({status:false,message:"password is required "})
-
-
-        //--------------------------address check---------------------//
-        if(address){
-            const {shipping,billing}=address
-            if(!shipping && !billing)
-                return res.status(400).send({status:false,message:"send shipping and billing address"})
-            if(shipping,billing){
-                const {street,city,pincode}={shipping,billing}
-                //----------------------check street-------------//
-                if(!street) return res.status(400).send({status:false,message:"please enter street"})
-                if(!isValidStreet(street)) return res.status(400).send({status:false,message:"please enter valid street"})
-
-                //----------------------check city-------------//
-                if(!city) return res.status(400).send({status:false,message:"please enter city"})
-                if(!isValidCity(city)) return res.status(400).send({status:false,message:"please enter valid city"})
-
-                //----------------------check pincode-------------//
-                if(!pincode) return res.status(400).send({status:false,message:"please enter pincode"})
-                if(!isValidPincode(pincode)) return res.status(400).send({status:false,message:"please enter valid pincode"})
-                
-            }
-
-
-        } 
-        
-        //imageurl check
-        if(!images && images.length>0){
-            res.status(400).send({ msg: "No file found" })
+      let { fname, lname, email, phone, password, address, profileImage } = data;
+      if (!isEmpty(fname)) {
+        return res.status(400).send({status: "false", message: "fname must be present"});
+      }
+      if (!isEmpty(lname)) {
+        return res.status(400).send({status: "false", message: "lname must be present"});
+      }
+      if (!isEmpty(email)) {
+        return res.status(400).send({status: "false", message: "email must be present"});
+      }
+      if (!isEmpty(phone)) {
+        return res.status(400).send({status: "false", message: "phone number must be present"});
+      }
+      if (!isEmpty(password)) {
+        return res.status(400).send({status: "false", message: "password must be present"});
+      }
+      if (!isEmpty(address)) {
+        return res.status(400).send({status: "false", message: "Address must be present"});
+      }
+      if (!isValidName(lname)) {
+        return res.status(400).send({status: "false", message: "last name must be in alphabetical order"});
+      }
+      if (!isValidPhone(phone)) {
+        return res.status(400).send({ status: "false", message: "Provide a valid phone number" });
+      }
+      if( password.length < 8 || password.length > 15){
+        return res.status(400).send({ status: false, message: "Length of password is not correct" })
+      }
+      if (!isValidName(fname)) {
+        return res.status(400).send({status: "false",message: "first name must be in alphabetical order"});
+      }
+  
+      // ------- Address Validation  --------
+      if (address) {
+        data.address = JSON.parse(data.address);
+        if(address.shipping) {
+          if (!isEmpty(address.shipping.street)) {
+            return res.status(400).send({status: "false", message: "street must be present"});
           }
-          let uploadedImageURL= await uploadImage( images[0] )
-          if(uploadedImageURL){
-            data.profileImage = uploadedImageURL
+          if (!isEmpty(address.shipping.city)) {
+            return res.status(400).send({ status: "false", message: "city must be present" });
           }
-          else{
-            res.status(400).send({message : "url not created"})
+          if (!isEmpty(address.shipping.pincode)) {
+            return res.status(400).send({ status: "false", message: "pincode must be present" });
           }
-          const UserData = await userModel.create(data)
-          return res.status(201).send({status:true,message:"user created successfully",Data:UserData})
-
-
-
+          if (!isValidStreet(address.shipping.street)) {
+            return res.status(400).send({status: "false",message: "street should include no. & alphabets only"});
+          }
+          if (!isValidName(address.shipping.city)) {
+            return res.status(400).send({status: "false",message: "city should include alphabets only"});
+          }
+          if (!isValidpincode(address.shipping.pincode)) {
+            return res.status(400).send({status: "false",message: "pincode should be digits only"});
+          }
+        }
+        if (address.billing) {
+          if (!isEmpty(address.billing.street)) {
+            return res.status(400).send({status: "false", message: "street must be present"});
+          }
+          if (!isEmpty(address.billing.city)) {
+            return res.status(400).send({status: "false", message: "city must be present"});
+          }
+          if (!isEmpty(address.billing.pincode)) {
+            return res.status(400).send({status: "false", message: "pincode must be present"});
+          }
+          if (!isValidStreet(address.billing.street)) {
+            return res.status(400).send({status: "false",message: "street should include no. and alphabets only"});
+          }
+          if (!isValidName(address.billing.city)) {
+            return res.status(400).send({status: "false",message: "city should be in alphabetical order"});
+          }
+          if (!isValidpincode(address.billing.pincode)) {
+            return res.status(400).send({status: "false",message: "pincode should be digits only"});
+          }
+        }
+      }
+      const saltRounds = await bcrypt.genSalt(10);
+      console.log(saltRounds)
+      const hash = await bcrypt.hash(password, saltRounds);
+      data.password = hash;
+  
+      let checkEmail = await userModel.findOne({ email});
+      if (checkEmail) {
+        return res.status(400).send({status: "false", message: "Email is already in use"});
+      }
+      let checkPhone = await userModel.findOne({phone });
+      if (checkPhone) {
+        return res.status(400).send({status: "false", message: "Phone number is already in use"});
+      }
+  
+      if(files.length===0){
+        return res.status(400).send({ status : false, message : "Profile Image is mandatory"})
+      }
+      if(files.fieldname=='profileImage'){
+        return res.status(400).send({ status : false, message : "file name should be profile image"})
+      }
+  
+      // console.log(files)
+      let profileImgUrl = await uploadFile(files[0])
+          data.profileImage = profileImgUrl
+  
+      let savedUser = await userModel.create(data);
+      return res.status(201).send({
+        status: true,message: "user has been created successfully",data: savedUser});
+      } catch (error) {
+      return res.status(500).send({ status: "false", msg: error.message });
     }
-    catch(err){
-        return res.status(500).send({status:false,messsage:err.messsage})
-    }
-}
+  };
 //=============user login
 const userLogin = async function (req, res) {
 
