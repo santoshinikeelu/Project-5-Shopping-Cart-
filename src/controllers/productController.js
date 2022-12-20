@@ -131,7 +131,7 @@ const deleteProductById = async function (req, res) {
         }
 
         let deleteProduct = await productModel.findByIdAndUpdate(productId, { $set: { isDeleted: true, deletedAt: Date.now() }}, { new: true });
-         res.status(200).send({ status: true, message: "Product Successfully Deleted.", data: deleteProduct })
+         res.status(200).send({ status: true, message: "Product Successfully Deleted." })
     } catch (error) {
         res.status(500).send({ status: false, error: error.message });
     }
