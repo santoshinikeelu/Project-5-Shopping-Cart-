@@ -4,7 +4,6 @@ const authentication = async function (req, res, next) {
     try {
 
         let bearToken = req.headers["authorization"];
-        // if (!bearToken) bearToken = req.headers["Authorization"]
         if (!bearToken) {
             return res.status(400).send({ status: false, message: "Token not present, login again " })
         };
@@ -13,7 +12,7 @@ const authentication = async function (req, res, next) {
 
         let decodedToken = jwt.verify(token, "group3Project5",function(err,decodedToken){
         if(err){
-          return res.status(400).send({status:false,message:"Inavalid token"})
+          return res.status(400).send({status:false,message:"Invalid token"})
         }else{
           req.userId = decodedToken.userId;
             next();

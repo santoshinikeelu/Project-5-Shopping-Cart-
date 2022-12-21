@@ -122,7 +122,7 @@ const createUser = async function (req, res) {
     return res.status(500).send({ status: "false", msg: error.message });
   }
 };
-//=============user login
+//=============user login====================
 const userLogin = async function (req, res) {
 
   try {
@@ -190,7 +190,7 @@ const getUser = async function (req, res) {
   }
 };
 
-
+// ====================updateUser==========================
 const updateuserDetails = async function (req, res) {
   try {
     //--------------------------userId check---------------------//
@@ -252,7 +252,7 @@ const updateuserDetails = async function (req, res) {
       if (files.fieldname == 'profileImage') {
         return res.status(400).send({ status: false, message: "file name should be profile image" })
       }
-      let profileImgUrl = await uplorddImage(files[0])
+      let profileImgUrl = await uploadFile(files[0])
       bodyData.profileImage = profileImgUrl
 
       updateData["profileImage"] = profileImage;
