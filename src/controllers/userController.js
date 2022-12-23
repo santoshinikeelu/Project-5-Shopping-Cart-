@@ -39,7 +39,7 @@ const createUser = async function (req, res) {
     if (!isValidPhone(phone)) {
       return res.status(400).send({ status: "false", message: "Provide a valid phone number" });
     }
-    if (!isValidPhone(email)) {
+    if (!isValidEmail(email)) {
       return res.status(400).send({ status: "false", message: "Provide a valid email" });
     }
     if (password.length < 8 || password.length > 15) {

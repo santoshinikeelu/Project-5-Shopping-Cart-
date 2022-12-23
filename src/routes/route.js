@@ -26,7 +26,7 @@ router.delete("/products/:productId", productController.deleteProductById);
 router.post("/users/:userId/cart",authentication,cartController.createCart)
 router.put("/users/:userId/cart",cartController.updateCart)
 router.get("/users/:userId/cart",cartController.getCartData)
-router.delete("/user/:userId/cart",cartController.deleteCart)
+router.delete("/users/:userId/cart",cartController.deleteCart)
 
 // ------------------------< Order >---------------------------------//
 
