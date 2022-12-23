@@ -212,7 +212,9 @@ const updateuserDetails = async function (req, res) {
 
     //--------------------------check body---------------------//
     let bodyData = req.body
-    if (Object.keys(bodyData).length === 0) {
+    let profileImage = req.files
+      console.log(profileImage)
+    if (Object.keys(bodyData).length === 0 && profileImage.length === 0) {
       return res.status(400).send({ status: false, message: "pls provided body" })
     }
 
@@ -222,7 +224,7 @@ const updateuserDetails = async function (req, res) {
     }
 
     //--------------------------destructure---------------------//
-    let { fname, lname, email, phone, profileImage, password, address } = bodyData
+    let { fname, lname, email, phone, password, address } = bodyData
     let updateData = {};
 
     //--------------------------fname check---------------------//
@@ -248,18 +250,12 @@ const updateuserDetails = async function (req, res) {
     }
 
     // ---------------------------profileimage---------------------------//
-    if (profileImage) {
-      if (files.length === 0) {
-        return res.status(400).send({ status: false, message: "Profile Image is mandatory" })
-      }
-      if (files.fieldname == 'profileImage') {
-        return res.status(400).send({ status: false, message: "file name should be profile image" })
-      }
-      let profileImgUrl = await uploadFile(files[0])
+
+      let profileImgUrl = await uploadFile(profileImage[0])
       bodyData.profileImage = profileImgUrl
 
-      updateData["profileImage"] = profileImage;
-    }
+      updateData["profileImage"] = profileImgUrl;
+  
 
     //--------------------------email check---------------------//
     if (email) {
