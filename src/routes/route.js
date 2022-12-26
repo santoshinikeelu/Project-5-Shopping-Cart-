@@ -5,6 +5,7 @@ const { authentication } = require("../middleware/auth")
 const userController = require("../controllers/userController")
 const productController = require("../controllers/productController")
 const cartController = require("../controllers/cartController")
+const orderController = require("../controllers/orderController")
 
 // ------------------------< USERS >-------------------------//
 
@@ -23,13 +24,14 @@ router.delete("/products/:productId", productController.deleteProductById);
 
 // ------------------------< Cart >---------------------------------//
 
-router.post("/users/:userId/cart",cartController.createCart)//authentication
+router.post("/users/:userId/cart",authentication,cartController.createCart)//authentication
 router.put("/users/:userId/cart",cartController.updateCart)
 router.get("/users/:userId/cart",cartController.getCart)
 router.delete("/users/:userId/cart",cartController.deleteCart)
 
 // ------------------------< Order >---------------------------------//
-
+router.post("/users/:userId/orders",orderController.createOrder)//authentication
+router.put("/users/:userId/orders",orderController.updateOrder)
 
 
 router.all("/*", function (req, res) {

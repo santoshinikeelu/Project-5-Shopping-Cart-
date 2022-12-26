@@ -179,6 +179,9 @@ const getUser = async function (req, res) {
     if (!checkData) {
       return res.status(404).send({ status: false, message: "No data found" });
     }
+    if(userId!=req.userId){
+      return res.status(404).send({ status: false, message: "put a correct userId that used in " })
+    }
 
     return res.status(200).send({
       status: true, message: "Users Profile Details", data: checkData

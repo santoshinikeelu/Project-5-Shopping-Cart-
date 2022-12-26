@@ -87,9 +87,11 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "Style is not in correct format" })
         }
         // installements valid..
+        if(installments){
         if (!(installments || typeof installments == Number)) {
             return res.status(400).send({ status: false, message: "Installments should be in correct format" })
         }
+    }
 
         const document = await productModel.create(data);
         res.status(201).send({ status: true, message: "Success", data: document });
@@ -99,33 +101,6 @@ const createProduct = async (req, res) => {
     }
 };
 
-//==================================< GET PRODUCTBY ID >=========================================//
-
-const getProductById = async function (req, res) {
-    try {
-        let productId = req.params.productId;
-
-        if (!isValidObjectId(productId)) {
-            return res.status(400).send({ status: false, message: "ProductId not valid" });
-        }
-
-        const productCheck = await productModel.findById({ _id: productId })
-        if (!productCheck) {
-            return res.status(404).send({ status: false, message: "This product is not found" })
-        }
-
-        if (productCheck.isDeleted == true) {
-            return res.status(404).send({ status: false, message: "This product has been deleted" })
-        }
-
-        let getProducts = await productModel.findOne({ _id: productId, isDeleted: false }).select({ deletedAt: 0 })
-        return res.status(200).send({ status: true, message: "Success", data: getProducts })
-
-
-    } catch (err) {
-        return res.status(500).send({ satus: false, err: err.message });
-    }
-};
 
 //======================================> GET PRODUCTBY FILTER <=====================================//
 const getProductsByFilter = async function (req, res) {
@@ -177,6 +152,34 @@ const getProductsByFilter = async function (req, res) {
         return res.status(500).send({ error: error.message })
     }
 }
+//==================================< GET PRODUCTBY ID >=========================================//
+
+const getProductById = async function (req, res) {
+    try {
+        let productId = req.params.productId;
+
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "ProductId not valid" });
+        }
+
+        const productCheck = await productModel.findById({ _id: productId })
+        if (!productCheck) {
+            return res.status(404).send({ status: false, message: "This product is not found" })
+        }
+
+        if (productCheck.isDeleted == true) {
+            return res.status(404).send({ status: false, message: "This product has been deleted" })
+        }
+
+        let getProducts = await productModel.findOne({ _id: productId, isDeleted: false }).select({ deletedAt: 0 })
+        return res.status(200).send({ status: true, message: "Success", data: getProducts })
+
+
+    } catch (err) {
+        return res.status(500).send({ satus: false, err: err.message });
+    }
+};
+
 
 
 
@@ -198,12 +201,13 @@ const updateProducts = async function (req, res) {
         }
         // check data and files
         let data = req.body
+        //  destructure body
+        let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
         let files = req.files
         if(Object.keys(data).length == 0 && (!files || files.length == 0)) {
             return res.status(400).send({ status: false, message: "Please enter the data to update" })
         }
-        //  destructure body
-        let { title, description, price, currencyId, currencyFormat, productImage, isFreeShipping, style, availableSizes, installments } = data
+        
         // check title
         if (title) {
             if (!isEmpty(title)) {
@@ -227,12 +231,13 @@ const updateProducts = async function (req, res) {
             }
         }
         // check price
-        if (price) {
+        if(price){
             if (!isValidPrice(price)) {
                 return res.status(400).send({ status: false, message: "Price is not present in correct format" })
             }
-        }
-        // check currenyId
+            }
+        
+        // check currencyId
         if(currencyId){
         if (currencyId != "INR") {
             return res.status(400).send({ status: false, msg: " Please provide the currencyId as `INR` " });
@@ -246,13 +251,13 @@ const updateProducts = async function (req, res) {
         }
         // check productImage
 
-        if (files.fieldname == 'profileImage') {
-            return res.status(400).send({ status: false, message: "file name should be profile image" })
+        if (files.fieldname == 'productImage') {
+            return res.status(400).send({ status: false, message: "file name should be product image" })
         }
         if(files.length == 1){
-        let profileImgUrl = await aws.uploadFile(files[0])
-        data.profileImage = profileImgUrl
-        console.log(data.profileImage)
+        let productImgUrl = await aws.uploadFile(files[0])
+        data.productImage = productImgUrl
+        console.log(data.productImage)
         }
            
         // check isFreeShipping
@@ -316,7 +321,7 @@ const deleteProductById = async function (req, res) {
         }
 
         let deleteProduct = await productModel.findByIdAndUpdate(productId, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
-        res.status(200).send({ status: true, message: "Product Successfully Deleted." })
+        res.status(200).send({ status: true, message: "Product Successfully Deleted.",data:deleteProduct })
     } catch (error) {
         res.status(500).send({ status: false, error: error.message });
     }

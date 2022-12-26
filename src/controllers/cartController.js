@@ -1,7 +1,7 @@
 const cartModel = require("../models/cartModel");
 const userModel = require("../models/userModel");
 const productModel = require("../models/productModel");
-const { isEmpty, isValidName, isValidEmail, isValidPhone, isValidStreet, isValidPincode, isValidCity } = require("../validator/validator");
+const { isEmpty } = require("../validator/validator");
 const { isValidObjectId } = require("mongoose");
 
 const createCart = async function (req, res) {
@@ -243,38 +243,6 @@ const updateCart = async function (req, res) {
     }
 }
 //==================< GETCART DATA >==========================//
-
-// const getCartData = async function (req, res) {
-//     // try {
-//         let userId = req.params.userId
-
-//         if (!isEmpty(userId)) {
-//             return res.status(400).send({ status: false, message: "UserId is missing" })
-//         }
-
-//         if (!isValidObjectId(userId)) {
-//             return res.status(400).send({ status: false, msg: "Invalid userId" });
-//         }
-
-//         let findUser = await userModel.findOne({ _id: userId })
-//         if (!findUser) {
-//             return res.status(404).send({ status: false, message: "User not found" })
-//         }
-       
-//         let findCart = await cartModel.findOne({ userId: userId })
-//         .populate({path: "items", populate: { path: "productId",select: ["title", "price", "productImage"] } });
-//         console.log(findCart)
-//         if (!findCart) {
-//             return res.status(404).send({ status: false, message: "cart is not found" })
-//         }
-
-//         return res.status(200).send({ status: true, message: "Success", data: findCart })
-
-    // } catch (error) {
-    //     return res.status(500).send({ status: false, msg: error.message })
-    // }
-// }
-
 const getCart = async function (req, res) {
     try {
       let userId = req.params.userId;
@@ -342,7 +310,7 @@ const deleteCart = async (req, res) => {
         let totalPrice = 0
         let totalItems = 0
         const cartGet = await cartModel.findOneAndUpdate({ userId: userId }, { items: items, totalPrice: totalPrice, totalItems: totalItems }, { new: true });
-        return res.status(200).send({ status: true, message: 'Success', data: cartGet });
+        return res.status(200).send({ status: true, message: 'Successfully deleted', data: cartGet });
     }
 
     catch (error) {
