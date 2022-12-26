@@ -7,13 +7,12 @@ const jwt = require("jsonwebtoken");
 const createUser = async function (req, res) {
   try {
     let data = req.body;
-    let files = req.files;
     console.log(data)
-
-    if (Object.keys(data).length == 0) {
+    let files = req.files;
+    console.log(files)
+    if (Object.keys(data).length == 0 && (!files || files.length == 0)) {
       return res.status(400).send({ status: "false", message: "All fields are mandatory" });
     }
-
     let { fname, lname, email, phone, password, address, profileImage } = data;
     if (!isEmpty(fname)) {
       return res.status(400).send({ status: "false", message: "fname must be present" });
@@ -43,7 +42,7 @@ const createUser = async function (req, res) {
       return res.status(400).send({ status: "false", message: "Provide a valid email" });
     }
     if (password.length < 8 || password.length > 15) {
-      return res.status(400).send({ status: false, message: "Length of password is not correct" })
+      return res.status(400).send({ status: false, message: "Length of password is between 8 to 15 charcters" })
     }
     if (!isValidName(fname)) {
       return res.status(400).send({ status: "false", message: "first name must be in alphabetical order" });
@@ -94,7 +93,7 @@ const createUser = async function (req, res) {
       }
     }
     const saltRounds = await bcrypt.genSalt(10);
-    console.log(saltRounds)
+ 
     const hash = await bcrypt.hash(password, saltRounds);
     data.password = hash;
 
@@ -107,15 +106,13 @@ const createUser = async function (req, res) {
       return res.status(400).send({ status: "false", message: "Phone number is already in use" });
     }
 
-    if (files.length === 0) {
-      return res.status(400).send({ status: false, message: "Profile Image is mandatory" })
-    }
     if (files.fieldname == 'profileImage') {
       return res.status(400).send({ status: false, message: "file name should be profile image" })
     }
-    // console.log(files)
+    if(files.length == 1){
     let profileImgUrl = await uploadFile(files[0])
     data.profileImage = profileImgUrl
+    }
 
     let savedUser = await userModel.create(data);
     return res.status(201).send({
@@ -125,11 +122,9 @@ const createUser = async function (req, res) {
     return res.status(500).send({ status: "false", msg: error.message });
   }
 };
-//=============user login====================
+//=============user login====================//
 const userLogin = async function (req, res) {
-
-  try {
-
+ try {
     let data = req.body
 
     let { email, password } = data
@@ -171,7 +166,7 @@ const userLogin = async function (req, res) {
     return res.status(500).send({ status: false, message: err.message });
   }
 };
-//==============Get User================
+//==============Get User================//
 const getUser = async function (req, res) {
   try {
     let userId = req.params.userId;
@@ -193,12 +188,12 @@ const getUser = async function (req, res) {
   }
 };
 
-// ====================updateUser==========================
+// ====================updateUser==========================//
 const updateuserDetails = async function (req, res) {
   try {
     //--------------------------userId check---------------------//
     let userId = req.params.userId
-
+   
     if (!userId || userId == "") {
       return res.status(400).send({ status: false, msg: "please enter userId" })
     }
@@ -207,14 +202,13 @@ const updateuserDetails = async function (req, res) {
     }
     let userIdDetail = await userModel.findById(userId)
     if (!userIdDetail) {
-      return res.status(400).send({ status: false, msg: " userId is not present" })
+      return res.status(404).send({ status: false, msg: " userId not found" })
     }
 
     //--------------------------check body---------------------//
     let bodyData = req.body
-    let profileImage = req.files
-      console.log(profileImage)
-    if (Object.keys(bodyData).length === 0 && profileImage.length === 0) {
+    let files = req.files     
+    if( Object.keys(bodyData).length == 0 && (!files || files.length == 0)) {
       return res.status(400).send({ status: false, message: "pls provided body" })
     }
 
@@ -224,7 +218,7 @@ const updateuserDetails = async function (req, res) {
     }
 
     //--------------------------destructure---------------------//
-    let { fname, lname, email, phone, password, address } = bodyData
+    let { fname, lname, email, phone, password, address, profileImage } = bodyData
     let updateData = {};
 
     //--------------------------fname check---------------------//
@@ -250,13 +244,15 @@ const updateuserDetails = async function (req, res) {
     }
 
     // ---------------------------profileimage---------------------------//
-
-      let profileImgUrl = await uploadFile(profileImage[0])
-      bodyData.profileImage = profileImgUrl
-
-      updateData["profileImage"] = profileImgUrl;
-  
-
+   if (files.fieldname == 'profileImage') {
+      return res.status(400).send({ status: false, message: "file name should be profile image" })
+    }
+    if(files.length == 1){
+    let profileImgUrl = await uploadFile(files[0])
+     bodyData.profileImage = profileImgUrl
+     updateData["profileImage"] = profileImgUrl;
+    }
+     
     //--------------------------email check---------------------//
     if (email) {
       if (!isValidEmail(email)) {
@@ -356,6 +352,7 @@ const updateuserDetails = async function (req, res) {
     res.status(200).send({ status: true, message: "User profile update", data: result });
 
   } catch (error) {
+    console.log(error)
     return res.status(500).send({ status: false, message: error.message })
   }
 }
