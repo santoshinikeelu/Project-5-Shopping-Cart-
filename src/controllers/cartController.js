@@ -20,10 +20,7 @@ const createCart = async function (req, res) {
             return res.status(400).send({ status: false, msg: " userId is not present" })
         }
 
-        // Authorization
-        // if (req.userId != userId) {
-        //     return res.status(401).send({ status: false, message: "You're not Authorized" })
-        // }
+      
 
         // check body
         let cartData = req.body
@@ -310,7 +307,7 @@ const deleteCart = async (req, res) => {
         let totalPrice = 0
         let totalItems = 0
         const cartGet = await cartModel.findOneAndUpdate({ userId: userId }, { items: items, totalPrice: totalPrice, totalItems: totalItems }, { new: true });
-        return res.status(200).send({ status: true, message: 'Successfully deleted', data: cartGet });
+        return res.status(204).send({ status: true, message: 'Successfully deleted', data: cartGet });
     }
 
     catch (error) {

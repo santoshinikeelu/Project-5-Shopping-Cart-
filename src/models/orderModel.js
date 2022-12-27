@@ -48,6 +48,11 @@ const orderSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    __v: { 
+        type: Number,
+         select: false
+        }
+    
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

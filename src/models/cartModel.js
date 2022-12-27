@@ -36,9 +36,13 @@ const cartSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        __v: { 
+            type: Number,
+             select: false
+            }
+        
     },
-    { timestamps: true },
-    
+    { timestamps: true }    
 );
 
 module.exports = mongoose.model("Cart", cartSchema);

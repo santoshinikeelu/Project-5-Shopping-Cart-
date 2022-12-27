@@ -69,7 +69,12 @@ const userSchema = new mongoose.Schema({
                 trim: true
             }
         },
-    }
+    },
+    __v: { 
+        type: Number,
+         select: false
+        }
+    
 
 }, { timestamps: true })
 

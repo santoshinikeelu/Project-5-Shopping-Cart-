@@ -59,6 +59,11 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    __v: { 
+        type: Number,
+         select: false
+        }
+    
 
 }, { timestamps: true })
 module.exports = mongoose.model("products", productSchema)

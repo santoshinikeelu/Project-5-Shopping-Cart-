@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const userModel = require("../models/userModel");
+const {isValidObjectId} = require("../validator/validator")
 
 const authentication = async function (req, res, next) {
     try {
@@ -24,6 +26,33 @@ const authentication = async function (req, res, next) {
     }
 }
 
+//====================================authorisation==========================================//
+
+const authorisation = async function(req,res,next){
+  try{
+    const userId = req.params.userId
+    if(!userId){
+      return res.status(400).send({status:false,message:"enter userId"})
+    }
+    if(!isValidObjectId(userId)){
+      return res.status(400).send({status:false,message:"userId is not valid"})
+    }
+    let tokenuserId = req.userId
+    // let userdata = await userModel.findById(userId)
+    if(tokenuserId!=userId){
+      return res.status(403).send({status:false,message:"you aren't authorised user"})
+    }
+    else{
+      next()
+    }
 
 
-module.exports = { authentication }
+  }
+  catch(err){
+return res.status(500).send({status:false,message:"internal server error",error:err.message})
+  }
+}
+
+
+
+module.exports = { authentication ,authorisation}

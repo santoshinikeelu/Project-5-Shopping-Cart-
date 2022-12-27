@@ -168,7 +168,7 @@ const getProductById = async function (req, res) {
         }
 
         if (productCheck.isDeleted == true) {
-            return res.status(404).send({ status: false, message: "This product has been deleted" })
+            return res.status(400).send({ status: false, message: "This product has been deleted" })
         }
 
         let getProducts = await productModel.findOne({ _id: productId, isDeleted: false }).select({ deletedAt: 0 })
@@ -197,7 +197,7 @@ const updateProducts = async function (req, res) {
             return res.status(404).send({ status: false, message: "This product is not found" })
         }
         if (existingProduct.isDeleted == true) {
-            return res.status(404).send({ status: false, message: "This product has been deleted" })
+            return res.status(400).send({ status: false, message: "This product has been deleted" })
         }
         // check data and files
         let data = req.body

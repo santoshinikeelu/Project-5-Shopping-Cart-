@@ -4,7 +4,7 @@ const cartModel = require("../models/cartModel")
 const userModel = require("../models/userModel")
 const validation = require("../validator/validator");
 
-const { isEmpty, isValidObjectId } = validation;
+const { isEmpty, isValidObjectId,isValidStatus } = validation;
 
 //=====================================> CREATE ORDER <=======================================//
 
@@ -46,7 +46,7 @@ const createOrder = async function (req, res){
 
         const cartCheck = findCart.items.length
         if (cartCheck == 0) {
-            return res.status(404).send({ message: "The cart is empty please add product to proceed your order" })
+            return res.status(400).send({ message: "The cart is empty please add product to proceed your order" })
         }
 
         let { items, totalPrice, totalItems } = findCart
@@ -70,49 +70,47 @@ const createOrder = async function (req, res){
 }
 
 //---------------------------------update order-----------------------------------//
-const updateOrder = async function (req, res){
+
+const updateOrder = async (req, res) => {
+
     try {
 
-        let data = req.body
         let userId = req.params.userId
+        let data = req.body
 
-        let{ orderId, status} = data
+        let { orderId, status } = data
+
+        if (!orderId) return res.status(400).send({ status: false, message: "Please enter OrderId ." })
+        if (!isValidObjectId(orderId)) return res.status(400).send({ status: false, message: `This OrderId: ${orderId} is not valid!.` })
 
 
-        if(!isEmpty(userId)){
-            return res.status(400).send({ status : false, message : "UserId is missing in params"})
+        if (!isValidStatus(status)) {
+            return res.status(400).send({ status: false, message: "Please enter existing status(i.e 'pending', 'completed', 'cancled' )." })
         }
 
-        if(!isValidObjectId(userId)){
-            return res.status(400).send({ status : false, message : "UserId is not valid"})
-        }
+        let checkStatus = await orderModel.findOne({ _id: orderId, userId: userId })
+        if (!checkStatus) { return res.status(404).send({ status: false, message: "Order doesn't exist with your UserID." }) }
 
-        let userCheck = await userModel.findOne({_id:userId})
-        if(!userCheck){
-            return res.status(400).send({ status : false, message : "This userId is not found"})
-        }
+    
+        
+        if (checkStatus.status == 'cancelled') { return res.status(400).send({ status: true, message: "Your Order already cancelled." }) }
 
-         if(!orderId){
-            return res.status(400).send({ status : false, message : "OrderId is missing"})
-         }
+       
+        if (checkStatus.cancellable == false && status == 'cancelled') { return res.status(200).send({ status: true, message: "Your Order can't be cancel!" }) }
 
-        let productId = req.body.orderId;
-        console.log(productId)
+        
+        let cartDetails = await cartModel.findOne({ userId: userId })
+        if (!cartDetails) { return res.status(404).send({ status: false, message: "Cart doesn't exist!" }) }
 
-        let newStatus = {}
-        if(status){
-            if(!(status =="completed" || status == "cancelled")){
-                return res.status(400).send({ status : false, message : "status can be from enum only"})
-            }else{
-                newStatus.status = status
-            }
-        }
+        let orderUpdate = await orderModel.findByIdAndUpdate({ _id: orderId, userId: userId }, { status: status }, { new: true })
 
-        const orderCancel = await orderModel.findOneAndUpdate({ _id: productId },newStatus,{ new: true });
-        return res.status(200).send({ status: true, message: "Success", data: orderCancel });
-    }catch(err){
-        res.status(500).send(err.message);
+    
+        return res.status(200).send({ status: true, message: "Success", data: orderUpdate })
+
+    } catch (error) {
+
+        return res.status(500).send({ status: false, error: error.message })
     }
-};
+}
 
 module.exports = {createOrder,updateOrder};

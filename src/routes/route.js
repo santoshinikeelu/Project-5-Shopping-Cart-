@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router()
-const { authentication } = require("../middleware/auth")
+const { authentication,authorisation } = require("../middleware/auth")
 
 const userController = require("../controllers/userController")
 const productController = require("../controllers/productController")
@@ -11,8 +11,8 @@ const orderController = require("../controllers/orderController")
 
 router.post("/register",userController.createUser);
 router.post("/login", userController.userLogin);
-router.get("/user/:userId",authentication,userController.getUser)
-router.put("/user/:userId",authentication,userController.updateuserDetails)
+router.get("/user/:userId/profile",authentication,userController.getUser)
+router.put("/user/:userId/profile",authentication,authorisation,userController.updateuserDetails)
 
 // ------------------------< PRODUCTS >-------------------------//
 router.post("/products",productController.createProduct);
@@ -24,14 +24,14 @@ router.delete("/products/:productId", productController.deleteProductById);
 
 // ------------------------< Cart >---------------------------------//
 
-router.post("/users/:userId/cart",authentication,cartController.createCart)//authentication
-router.put("/users/:userId/cart",cartController.updateCart)
-router.get("/users/:userId/cart",cartController.getCart)
-router.delete("/users/:userId/cart",cartController.deleteCart)
+router.post("/users/:userId/cart",authentication,authorisation,cartController.createCart)//authentication
+router.put("/users/:userId/cart",authentication,authorisation,cartController.updateCart)
+router.get("/users/:userId/cart",authentication,authorisation,cartController.getCart)
+router.delete("/users/:userId/cart",authentication,authorisation,cartController.deleteCart)
 
 // ------------------------< Order >---------------------------------//
-router.post("/users/:userId/orders",orderController.createOrder)//authentication
-router.put("/users/:userId/orders",orderController.updateOrder)
+router.post("/users/:userId/orders",authentication,authorisation,orderController.createOrder)//authentication
+router.put("/users/:userId/orders",authentication,authorisation,orderController.updateOrder)
 
 
 router.all("/*", function (req, res) {

@@ -4,7 +4,8 @@
   "description": "Dummy project of amazon or flipcart",
   "main": "index.js",
   "scripts": {
-    "test": "server/error-server"
+    "test": "server/error-server",
+    "start":"nodemon src/index.js"
   },
   "repository": {
     "type": "git",
