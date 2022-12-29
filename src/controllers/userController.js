@@ -297,60 +297,59 @@ const updateuserDetails = async function (req, res) {
     //-------------------------------------------address check----------------------------------------//
     if (address) {
       address = JSON.parse(address)
-      if (address.shipping != null) {
-        //----------------------check billing street-------------//
-        if (address.shipping.street != null) {
+
+      //----------------------check shipping street-------------//
+      if (address.shipping) {
+        if (address.shipping.street) {
           if (!isEmpty(address.shipping.street)) {
-            return res.status(400).send({ statsu: false, message: 'Please provide street address in shipping address.' })
+            return res.status(400).send({ status: false, message: "street is not valid in shipping address" })
           }
-          updateData['address.shipping.street'] = address.shipping.street
+
         }
-
-        //----------------------check shipping city-------------//
-
-        if (address.shipping.city != null) {
-          if (!isEmpty(address.shipping.city)) {
-            console.log(address.shipping.city)
-            return res.status(400).send({ statsu: false, message: 'Please provide City  in shipping address.' })
-          }
-          updateData['address.shipping.city'] = address.shipping.city
+        updateData['address.shipping.street'] = address.shipping.street
+      }
+      //----------------------check shipping city-------------//
+      if (address.shipping.city) {
+        if (!isValidName(address.shipping.city)) {
+          return res.status(400).send({ statsu: false, message: 'city is not valid in shipping address.' })
         }
-
-
-
-        //----------------------check shipping pincode-------------//
-        if (address.shipping.pincode != null) {
-          if (!isValidPincode(address.shipping.pincode)) {
-            return res.status(400).send({ status: false, message: ' Please provide a valid pincode in 6 digits' })
-          }
-          updateData['address.shipping.pincode'] = address.shipping.pincode
-        }
+        updateData['address.shipping.city'] = address.shipping.city
       }
 
-      //----------------------check billing street-------------//
-      if (address.billing != null) {
-        if (address.billing.street != null) {
-          if (isEmpty(address.billing.street)) {
-            return res.status(400).send({ statsu: false, message: 'Please provide street address in billing address.' })
-          }
-          updateData['address.billing.street'] = address.billing.street
-        }
 
-        //----------------------check billing city-------------//
-        if (address.billing.city != null) {
-          if (isEmpty(address.billing.street)) {
-            return res.status(400).send({ statsu: false, message: 'Please provide City in Billing address.' })
-          }
-          updateData['address.billing.city'] = address.billing.city
-        }
 
-        //----------------------check billing pincode-------------//
-        if (address.billing.pincode != null) {
-          if (!isValidPincode(address.billing.pincode)) {
-            return res.status(400).send({ status: false, message: ' Please provide a valid pincode in 6 digits' })
-          }
-          updateData['address.billing.pincode'] = address.billing.pincode
+      //----------------------check shipping pincode-------------//
+      if (address.shipping.pincode) {
+        if (!isValidPincode(address.shipping.pincode)) {
+          return res.status(400).send({ status: false, message: ' Please provide a valid pincode in 6 digits' })
         }
+        updateData['address.shipping.pincode'] = address.shipping.pincode
+      }
+    }
+
+    //----------------------check billing street-------------//
+    if (address.billing) {
+      if (address.billing.street) {
+        if (!isEmpty(address.billing.street)) {
+          return res.status(400).send({ status: false, message: "street is not valid in billing address" })
+        }
+        updateData['address.billing.street'] = address.billing.street
+      }
+
+      //----------------------check billing city-------------//
+      if (address.billing.city) {
+        if (!isValidName(address.billing.city)) {
+          return res.status(400).send({ status: false, message: "city is not valid in billing address" })
+        }
+        updateData['address.billing.city'] = address.billing.city
+
+      }
+      //----------------------check billing pincode-------------//
+      if (address.billing.pincode) {
+        if (!isValidPincode(address.billing.pincode)) {
+          return res.status(400).send({ status: false, message: ' Please provide a valid pincode in 6 digits' })
+        }
+        updateData['address.billing.pincode'] = address.billing.pincode
       }
     }
 

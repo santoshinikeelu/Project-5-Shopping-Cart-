@@ -76,6 +76,13 @@ const validPrice = function (price) {
 const isValidStatus = (value) => 
 { return ['pending', 'completed', 'cancelled'].indexOf(value) !== -1 }
 
+//number validation
+const isNumber = function (value) {
+  if (typeof (value) === 'undefined' || typeof (value) === 'null') return false
+  if (typeof (value) === 'number') return true
+
+}
+
 
 module.exports = {
   isEmpty,
@@ -91,6 +98,6 @@ module.exports = {
   isValidPrice,
   isValidStyle,
   validPrice,
-  isValidStatus
+  isValidStatus,isNumber
 };
 
